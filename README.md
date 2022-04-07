@@ -1,1 +1,1 @@
-# api-tests-golang
+a repo to practice API testing with Golang
