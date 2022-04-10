@@ -4,20 +4,31 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+
+	"github.com/go-resty/resty/v2"
 )
 
-func TestTheServiceIsReady(t *testing.T) {
-	client := GetClient()
+type SmokeSuite struct {
+	suite.Suite
+	client *resty.Client
+}
 
-	resp, err := client.R().Get("/ready")
+func (s *SmokeSuite) SetupSuite() {
+	s.client = resty.New().SetBaseURL("http://localhost:8080")
+}
+func (s *SmokeSuite) TestIsReady() {
+	resp, err := s.client.R().Get("/ready")
 	if err != nil {
-		t.Errorf("The service is not ready %s", err)
+		s.T().Errorf("The service is not ready %s", err)
 	}
-
 	var respB Readiness
 	json.Unmarshal(resp.Body(), &respB)
 
-	assert.Equal(t, 200, resp.StatusCode())
-	assert.Equal(t, respB.Status, "ready")
+	s.Equal(200, resp.StatusCode())
+	s.Equal(respB.Status, "ready")
+}
+
+func TestSmoke(t *testing.T) {
+	suite.Run(t, new(SmokeSuite))
 }
