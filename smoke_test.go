@@ -4,24 +4,14 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-
-	"github.com/go-resty/resty/v2"
 )
 
 type SmokeSuite struct {
-	suite.Suite
-	client *resty.Client
+	BaseSuite
 }
 
-func (s *SmokeSuite) SetupSuite() {
-	s.client = resty.New().SetBaseURL("http://localhost:8080")
-	_, err := s.client.R().Get("/ready")
-	if err != nil {
-		s.T().Errorf("The service is not ready %s", err)
-	}
-}
-
-//TODO: Add tests for token validation and move token tests to a separate suite
+// TODO: Add tests for token validation and move token tests to a separate suite
+// TODO: Add users test
 func (s *SmokeSuite) TestAuthValidData() {
 
 	r := getToken(s.client, "valid_user", "valid_password")
