@@ -3,7 +3,8 @@ package main
 import (
 	"time"
 
-	"github.com/stretchr/testify/suite"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+	"github.com/ozontech/allure-go/pkg/framework/suite"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -13,7 +14,7 @@ type BaseSuite struct {
 	client *resty.Client
 }
 
-func (s *BaseSuite) SetupSuite() {
+func (s *BaseSuite) BeforeAll(t provider.T) {
 	s.client = resty.New().SetBaseURL("http://localhost:8080")
 	var err error
 	var r *resty.Response
@@ -25,6 +26,6 @@ func (s *BaseSuite) SetupSuite() {
 		time.Sleep(100 * time.Millisecond)
 	}
 	if err != nil {
-		s.T().Errorf("The service was not available for 2 seconds %s", err)
+		s.GetRunner().T().Errorf("The service was not available for 2 seconds %s", err)
 	}
 }

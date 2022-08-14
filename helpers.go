@@ -13,18 +13,24 @@ func responseBodyToMap(r []byte) map[string]interface{} {
 }
 
 func getToken(c *resty.Client, uname string, pass string) *resty.Response {
-	req := c.R().SetBody(map[string]string{
-		"username": uname,
-		"password": pass,
-	})
+
+	body := make(map[string]string)
+	if uname != "" {
+		body["username"] = uname
+	}
+	if pass != "" {
+		body["password"] = pass
+	}
+
+	req := c.R().SetBody(body)
 	r, _ := req.Post("/token/get")
 	return r
 }
 
-func checkToken(c *resty.Client, token string) *resty.Response {
-	req := c.R().SetBody(map[string]string{
-		"accessToken": token,
-	})
-	r, _ := req.Post("/token/check")
-	return r
-}
+// func checkToken(c *resty.Client, token string) *resty.Response {
+// 	req := c.R().SetBody(map[string]string{
+// 		"accessToken": token,
+// 	})
+// 	r, _ := req.Post("/token/check")
+// 	return r
+// }
