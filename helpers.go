@@ -27,10 +27,10 @@ func getToken(c *resty.Client, uname string, pass string) *resty.Response {
 	return r
 }
 
-// func checkToken(c *resty.Client, token string) *resty.Response {
-// 	req := c.R().SetBody(map[string]string{
-// 		"accessToken": token,
-// 	})
-// 	r, _ := req.Post("/token/check")
-// 	return r
-// }
+func validateToken(c *resty.Client, token string) *resty.Response {
+	req := c.R().SetBody(map[string]string{
+		"token": token,
+	})
+	r, _ := req.Post("/token/validate")
+	return r
+}

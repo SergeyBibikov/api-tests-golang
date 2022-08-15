@@ -8,15 +8,15 @@ import (
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 )
 
-type TokenSuite struct {
+type GetTokenSuite struct {
 	BaseSuite
 }
 
-func (to *TokenSuite) BeforeEach(t provider.T) {
+func (to *GetTokenSuite) BeforeEach(t provider.T) {
 	t.Epic("Token tests")
 	t.Feature("Get token")
 }
-func (to *TokenSuite) TestGetAdminToken(t provider.T) {
+func (to *GetTokenSuite) TestGetAdminToken(t provider.T) {
 	t.Parallel()
 	t.Story("Positive")
 
@@ -30,7 +30,7 @@ func (to *TokenSuite) TestGetAdminToken(t provider.T) {
 	t.Assert().Equal(resp["token"], fmt.Sprintf("Admin_token_%s", username))
 }
 
-func (to *TokenSuite) TestGetRegularUserToken(t provider.T) {
+func (to *GetTokenSuite) TestGetRegularUserToken(t provider.T) {
 	t.Parallel()
 	t.Story("Positive")
 
@@ -44,7 +44,7 @@ func (to *TokenSuite) TestGetRegularUserToken(t provider.T) {
 	t.Assert().Equal(resp["token"], fmt.Sprintf("Regular_token_%s", username))
 }
 
-func (to *TokenSuite) TestGetPremiumUserToken(t provider.T) {
+func (to *GetTokenSuite) TestGetPremiumUserToken(t provider.T) {
 	t.Parallel()
 	t.Story("Positive")
 
@@ -58,7 +58,7 @@ func (to *TokenSuite) TestGetPremiumUserToken(t provider.T) {
 	t.Assert().Equal(resp["token"], fmt.Sprintf("Premium_token_%s", username))
 }
 
-func (to *TokenSuite) TestGetTokenWithWrongUsername(t provider.T) {
+func (to *GetTokenSuite) TestGetTokenWithWrongUsername(t provider.T) {
 	t.Parallel()
 	t.Story("Negative")
 
@@ -69,7 +69,7 @@ func (to *TokenSuite) TestGetTokenWithWrongUsername(t provider.T) {
 	t.Assert().Equal(resp["error"], "invalid username and/or password")
 }
 
-func (to *TokenSuite) TestGetTokenWithWrongPassword(t provider.T) {
+func (to *GetTokenSuite) TestGetTokenWithWrongPassword(t provider.T) {
 	t.Parallel()
 	t.Story("Negative")
 
@@ -80,7 +80,7 @@ func (to *TokenSuite) TestGetTokenWithWrongPassword(t provider.T) {
 	t.Assert().Equal(resp["error"], "invalid username and/or password")
 }
 
-func (to *TokenSuite) TestGetTokenWithoutPasswordInBody(t provider.T) {
+func (to *GetTokenSuite) TestGetTokenWithoutPasswordInBody(t provider.T) {
 	t.Parallel()
 	t.Story("Negative")
 
@@ -91,7 +91,7 @@ func (to *TokenSuite) TestGetTokenWithoutPasswordInBody(t provider.T) {
 	t.Assert().Equal(resp["error"], "Password is a required field")
 }
 
-func (to *TokenSuite) TestGetTokenWithoutUsernameInBody(t provider.T) {
+func (to *GetTokenSuite) TestGetTokenWithoutUsernameInBody(t provider.T) {
 	t.Parallel()
 	t.Story("Negative")
 
@@ -102,25 +102,6 @@ func (to *TokenSuite) TestGetTokenWithoutUsernameInBody(t provider.T) {
 	t.Assert().Equal(resp["error"], "Username is a required field")
 }
 
-// func (to *TokenSuite) TestCheckValidToken(t provider.T) {
-// 	t.Parallel()
-
-// 	r := checkToken(to.client, "access_t")
-// 	resp := responseBodyToMap(r.Body())
-
-// 	t.Assert().Equal(200, r.StatusCode())
-// 	t.Assert().True(resp["valid"].(bool))
-// }
-// func (to *TokenSuite) TestCheckInvalidToken(t provider.T) {
-// 	t.Parallel()
-
-// 	r := checkToken(to.client, "access_tok")
-// 	resp := responseBodyToMap(r.Body())
-
-// 	t.Assert().Equal(400, r.StatusCode())
-// 	t.Assert().False(resp["valid"].(bool))
-// }
-
-func TestTokens(t *testing.T) {
-	suite.RunSuite(t, new(TokenSuite))
+func TestGetToken(t *testing.T) {
+	suite.RunSuite(t, new(GetTokenSuite))
 }
