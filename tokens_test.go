@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/ozontech/allure-go/pkg/framework/provider"
@@ -19,33 +20,42 @@ func (to *TokenSuite) TestGetAdminToken(t provider.T) {
 	t.Parallel()
 	t.Story("Positive")
 
-	r := getToken(to.client, "Jack", "JackPass")
+	username := "Jack"
+	password := "JackPass"
+
+	r := getToken(to.client, username, password)
 	resp := responseBodyToMap(r.Body())
 
 	t.Assert().Equal(200, r.StatusCode())
-	t.Assert().Equal(resp["token"], "Admin_token")
+	t.Assert().Equal(resp["token"], fmt.Sprintf("Admin_token_%s", username))
 }
 
 func (to *TokenSuite) TestGetRegularUserToken(t provider.T) {
 	t.Parallel()
 	t.Story("Positive")
 
-	r := getToken(to.client, "Steve", "StevePass")
+	username := "Steve"
+	password := "StevePass"
+
+	r := getToken(to.client, username, password)
 	resp := responseBodyToMap(r.Body())
 
 	t.Assert().Equal(200, r.StatusCode())
-	t.Assert().Equal(resp["token"], "Regular_user_token")
+	t.Assert().Equal(resp["token"], fmt.Sprintf("Regular_user_token_%s", username))
 }
 
 func (to *TokenSuite) TestGetPremiumUserToken(t provider.T) {
 	t.Parallel()
 	t.Story("Positive")
 
-	r := getToken(to.client, "Mike", "MikePass")
+	username := "Mike"
+	password := "MikePass"
+
+	r := getToken(to.client, username, password)
 	resp := responseBodyToMap(r.Body())
 
 	t.Assert().Equal(200, r.StatusCode())
-	t.Assert().Equal(resp["token"], "Premium_user_token")
+	t.Assert().Equal(resp["token"], fmt.Sprintf("Premium_user_token_%s", username))
 }
 
 func (to *TokenSuite) TestGetTokenWithWrongUsername(t provider.T) {
