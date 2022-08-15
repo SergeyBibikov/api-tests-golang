@@ -48,6 +48,39 @@ func (to *ValidateTokenSuite) TestValidPremiumUserToken(t provider.T) {
 	t.Assert().Empty(resp)
 }
 
+func (to *ValidateTokenSuite) TestInvalidTokenFormat(t provider.T) {
+	t.Parallel()
+	t.Story("Negative")
+
+	r := validateToken(to.client, "PremiumtokenMike")
+	resp := responseBodyToMap(r.Body())
+
+	t.Assert().Equal(400, r.StatusCode())
+	t.Assert().Equal("Incorrect token format. Proper format: role_token_username", resp["error"])
+}
+
+func (to *ValidateTokenSuite) TestNonexistingUserValidation(t provider.T) {
+	t.Parallel()
+	t.Story("Negative")
+
+	r := validateToken(to.client, "Premium_token_Bob")
+	resp := responseBodyToMap(r.Body())
+
+	t.Assert().Equal(401, r.StatusCode())
+	t.Assert().Equal("invalid username", resp["error"])
+}
+
+func (to *ValidateTokenSuite) TestIncorrectRoleValidation(t provider.T) {
+	t.Parallel()
+	t.Story("Negative")
+
+	r := validateToken(to.client, "Premium_token_Jack")
+	resp := responseBodyToMap(r.Body())
+
+	t.Assert().Equal(401, r.StatusCode())
+	t.Assert().Equal("incorrect user role", resp["error"])
+}
+
 func TestValidateToken(t *testing.T) {
 	suite.RunSuite(t, new(ValidateTokenSuite))
 }
