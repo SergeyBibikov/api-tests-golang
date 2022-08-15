@@ -41,7 +41,7 @@ func (to *TokenSuite) TestGetRegularUserToken(t provider.T) {
 	resp := responseBodyToMap(r.Body())
 
 	t.Assert().Equal(200, r.StatusCode())
-	t.Assert().Equal(resp["token"], fmt.Sprintf("Regular_user_token_%s", username))
+	t.Assert().Equal(resp["token"], fmt.Sprintf("Regular_token_%s", username))
 }
 
 func (to *TokenSuite) TestGetPremiumUserToken(t provider.T) {
@@ -55,7 +55,7 @@ func (to *TokenSuite) TestGetPremiumUserToken(t provider.T) {
 	resp := responseBodyToMap(r.Body())
 
 	t.Assert().Equal(200, r.StatusCode())
-	t.Assert().Equal(resp["token"], fmt.Sprintf("Premium_user_token_%s", username))
+	t.Assert().Equal(resp["token"], fmt.Sprintf("Premium_token_%s", username))
 }
 
 func (to *TokenSuite) TestGetTokenWithWrongUsername(t provider.T) {
