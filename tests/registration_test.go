@@ -27,6 +27,7 @@ func (to *RegistrationSuite) TestSuccessfulRegistration(t provider.T) {
 	resp := src.ResponseBodyToMap(r.Body())
 
 	t.Assert().Equal(201, r.StatusCode())
+	t.Assert().Nil(resp["error"])
 	t.Assert().Equal("user created", resp["message"])
 }
 
