@@ -34,3 +34,15 @@ func ValidateToken(c *resty.Client, token string) *resty.Response {
 	r, _ := req.Post("/token/validate")
 	return r
 }
+
+func Register(c *resty.Client, body RegStruct) *resty.Response {
+	req := c.R().SetBody(body)
+	r, _ := req.Post("/register")
+	return r
+}
+
+type RegStruct struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
+}
