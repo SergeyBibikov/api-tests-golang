@@ -1,4 +1,4 @@
-package main
+package src
 
 import (
 	"encoding/json"
@@ -6,13 +6,13 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-func responseBodyToMap(r []byte) map[string]interface{} {
+func ResponseBodyToMap(r []byte) map[string]interface{} {
 	var resp map[string]interface{}
 	json.Unmarshal(r, &resp)
 	return resp
 }
 
-func getToken(c *resty.Client, uname string, pass string) *resty.Response {
+func GetToken(c *resty.Client, uname string, pass string) *resty.Response {
 
 	body := make(map[string]string)
 	if uname != "" {
@@ -27,7 +27,7 @@ func getToken(c *resty.Client, uname string, pass string) *resty.Response {
 	return r
 }
 
-func validateToken(c *resty.Client, token string) *resty.Response {
+func ValidateToken(c *resty.Client, token string) *resty.Response {
 	req := c.R().SetBody(map[string]string{
 		"token": token,
 	})
