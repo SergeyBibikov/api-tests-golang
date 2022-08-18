@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/SergeyBibikov/api-tests-golang/src"
@@ -20,10 +21,13 @@ func (to *RegistrationSuite) TestSuccessfulRegistration(t provider.T) {
 	t.Parallel()
 	t.Story("Positive")
 
+	u := src.GetRandomString(5)
+	p := fmt.Sprintf("As%s", src.GetRandomString(6))
+	e := fmt.Sprintf("%s@gmail.com", src.GetRandomString(5))
 	r := src.Register(to.client, src.RegStruct{
-		Username: "Alex",
-		Password: "AaaaAaaa",
-		Email:    "bob@gmail.com"})
+		Username: u,
+		Password: p,
+		Email:    e})
 	resp := src.ResponseBodyToMap(r.Body())
 
 	t.Assert().Equal(201, r.StatusCode())
