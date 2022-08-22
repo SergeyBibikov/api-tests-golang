@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/SergeyBibikov/api-tests-golang/src"
+	"github.com/ozontech/allure-go/pkg/allure"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 )
@@ -50,6 +51,7 @@ func (to *RegistrationSuite) TestValidationOfEmptyFields(t provider.T) {
 	}
 
 	for _, tc := range testCases {
+		tc := tc
 		t.Run(tc.testName, func(t provider.T) {
 
 			t.Parallel()
@@ -83,15 +85,18 @@ func (to *RegistrationSuite) TestValidationEmailFormat(t provider.T) {
 	}
 
 	for _, tc := range testCases {
+		tc := tc
 		t.Run(tc.testName, func(t provider.T) {
 
 			t.Parallel()
 			t.Story("Negative")
 
-			r := src.Register(to.client, src.RegStruct{
+			b := src.RegStruct{
 				Username: src.GetRandomString(6),
 				Password: src.GetRandomString(8),
-				Email:    tc.email})
+				Email:    tc.email}
+			t.WithNewStep("Send request", func(sCtx provider.StepCtx) {}, allure.NewParameter("body", b))
+			r := src.Register(to.client, b)
 			resp := src.ResponseBodyToMap(r.Body())
 
 			t.Assert().Equal(400, r.StatusCode())
