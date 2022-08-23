@@ -57,10 +57,14 @@ func (to *RegistrationSuite) TestValidationOfEmptyFields(t provider.T) {
 			t.Parallel()
 			t.Story("Negative")
 
-			r := src.Register(to.client, src.RegStruct{
+			b := src.RegStruct{
 				Username: tc.username,
 				Password: tc.password,
-				Email:    tc.email})
+				Email:    tc.email}
+
+			t.WithNewStep("Send request", func(sCtx provider.StepCtx) {}, allure.NewParameter("body", b))
+
+			r := src.Register(to.client, b)
 			resp := src.ResponseBodyToMap(r.Body())
 
 			t.Assert().Equal(400, r.StatusCode())
