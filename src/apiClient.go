@@ -41,8 +41,25 @@ func Register(c *resty.Client, body RegStruct) *resty.Response {
 	return r
 }
 
+func GetTeams(c *resty.Client, filters ...interface{}) []Team {
+	r, _ := c.R().Get("/teams")
+
+	var tr map[string][]Team
+
+	json.Unmarshal(r.Body(), &tr)
+	return tr["results"]
+}
+
 type RegStruct struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 	Email    string `json:"email"`
+}
+
+type Team struct {
+	Id   int    `json:"id"`
+	Name string `json:"year"`
+	Conf string `json:"conference"`
+	Div  string `json:"division"`
+	Year int    `json:"est_year"`
 }
