@@ -1,0 +1,8 @@
+
+
+
+GET http://localhost:8080/teams?name="Utah Jazz"
+
+###
+
+GET http://localhost:8080/teams?conference=West
