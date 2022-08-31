@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/SergeyBibikov/api-tests-golang/src"
@@ -13,9 +14,28 @@ type TeamsSuite struct {
 }
 
 func (ts *TeamsSuite) TestTeamsQty(t provider.T) {
-	r := src.GetTeams(ts.client)
+	t.Story("Positive")
 
-	t.Assert().Equal(len(r), 30)
+	r := src.GetTeams(ts.client, nil)
+
+	var tr map[string][]src.Team
+	json.Unmarshal(r.Body(), &tr)
+
+	t.Assert().Equal(len(tr["results"]), 30)
+}
+
+func (ts *TeamsSuite) TestNameFilterDoesntAllowOtherFilters(t provider.T) {
+	t.Story("Negative")
+
+	m := make(map[string]string)
+	m["name"] = "Los Angeles Lakers"
+	m["conference"] = "West"
+	r := src.GetTeams(ts.client, m)
+	resp := src.ResponseBodyToMap(r.Body())
+
+	expectedMsg := "if name filter is present, other filters are not allowed"
+	t.Assert().Equal(400, r.StatusCode())
+	t.Assert().Equal(expectedMsg, resp["error"])
 }
 
 func TestTeams(t *testing.T) {

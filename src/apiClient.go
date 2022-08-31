@@ -2,6 +2,8 @@ package src
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/url"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -41,13 +43,21 @@ func Register(c *resty.Client, body RegStruct) *resty.Response {
 	return r
 }
 
-func GetTeams(c *resty.Client, filters ...interface{}) []Team {
-	r, _ := c.R().Get("/teams")
+func GetTeams(c *resty.Client, filters map[string]string) *resty.Response {
+	rr := url.URL{Path: "teams"}
+	q := rr.Query()
 
-	var tr map[string][]Team
-
-	json.Unmarshal(r.Body(), &tr)
-	return tr["results"]
+	if len(filters) > 0 {
+		for k, v := range filters {
+			q.Set(k, v)
+		}
+	}
+	rr.RawQuery = q.Encode()
+	r, err := c.R().Get(rr.JoinPath().String())
+	if err != nil {
+		fmt.Println(err)
+	}
+	return r
 }
 
 type RegStruct struct {
