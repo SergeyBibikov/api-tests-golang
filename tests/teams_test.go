@@ -24,6 +24,44 @@ func (ts *TeamsSuite) TestTeamsQty(t provider.T) {
 	t.Assert().Equal(len(tr["results"]), 30)
 }
 
+func (ts *TeamsSuite) TestNameFilter(t provider.T) {
+	t.Story("Positive")
+
+	m := make(map[string]string)
+	m["name"] = "Denver Nuggets"
+
+	r := src.GetTeams(ts.client, m)
+
+	var _t map[string][]src.Team
+	json.Unmarshal(r.Body(), &_t)
+	teams := _t["results"]
+
+	t.Assert().Equal(200, r.StatusCode())
+	t.Assert().Equal(1, len(teams))
+	t.Assert().Equal("West", teams[0].Conf)
+	t.Assert().Equal("Northwest", teams[0].Div)
+	t.Assert().Equal(1974, teams[0].Year)
+}
+
+func (ts *TeamsSuite) TestAllFiltersButName(t provider.T) {
+	t.Story("Positive")
+
+	m := make(map[string]string)
+	m["conference"] = "West"
+	m["division"] = "Southwest"
+	m["est_year"] = "1980"
+
+	r := src.GetTeams(ts.client, m)
+
+	var _t map[string][]src.Team
+	json.Unmarshal(r.Body(), &_t)
+	teams := _t["results"]
+
+	t.Assert().Equal(200, r.StatusCode())
+	t.Assert().Equal(1, len(teams))
+	t.Assert().Equal("Dallas Mavericks", teams[0].Name)
+}
+
 func (ts *TeamsSuite) TestNameFilterDoesntAllowOtherFilters(t provider.T) {
 	t.Story("Negative")
 
