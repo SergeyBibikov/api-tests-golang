@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/SergeyBibikov/api-tests-golang/src"
+	"github.com/ozontech/allure-go/pkg/allure"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 )
@@ -41,6 +42,33 @@ func (ts *TeamsSuite) TestNameFilter(t provider.T) {
 	t.Assert().Equal("West", teams[0].Conf)
 	t.Assert().Equal("Northwest", teams[0].Div)
 	t.Assert().Equal(1974, teams[0].Year)
+}
+
+func (ts *TeamsSuite) TestConferenceFilter(t provider.T) {
+	t.Story("Positive")
+
+	testCases := []struct {
+		conf string
+	}{
+		{conf: "East"},
+		{conf: "West"},
+	}
+	for _, tC := range testCases {
+		tc := tC
+		t.Run(tc.conf, func(t provider.T) {
+			m := make(map[string]string)
+			m["conference"] = tc.conf
+
+			t.WithNewStep("Send request", func(sCtx provider.StepCtx) {}, allure.NewParameter("body", m))
+			r := src.GetTeams(ts.client, m)
+			var _t map[string][]src.Team
+			json.Unmarshal(r.Body(), &_t)
+			teams := _t["results"]
+			t.Assert().Equal(200, r.StatusCode())
+			t.Assert().Equal(15, len(teams))
+		})
+	}
+
 }
 
 func (ts *TeamsSuite) TestAllFiltersButName(t provider.T) {
