@@ -73,3 +73,26 @@ type Team struct {
 	Div  string `json:"division"`
 	Year int    `json:"est_year"`
 }
+
+// type ApiClient struct {
+// 	r        *resty.Client
+// 	pt       *provider.T
+// 	Response *resty.Response
+// }
+
+// func (a *ApiClient) GetTeams(filters map[string]string) []Team {
+// 	u := url.URL{Path: "teams"}
+// 	q := u.Query()
+// 	for k, v := range filters {
+// 		q.Set(k, v)
+// 	}
+
+// 	u.RawQuery = q.Encode()
+// 	a.pt.WithNewParameters(" Request to 'teams'",
+// 		func(p provider.StpCtx) {}, allure.Parameter("path", filters))
+// 	_resp := r.R().Get(u.Parsed())
+// 	a.Response = _resp
+// 	var teams []Team
+// 	json.Unmarshall(_resp.Body(), &teams)
+// 	return teams
+// }
