@@ -6,6 +6,8 @@ import (
 	"net/url"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/ozontech/allure-go/pkg/allure"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
 )
 
 func ResponseBodyToMap(r []byte) map[string]interface{} {
@@ -74,25 +76,31 @@ type Team struct {
 	Year int    `json:"est_year"`
 }
 
-// type ApiClient struct {
-// 	r        *resty.Client
-// 	pt       *provider.T
-// 	Response *resty.Response
-// }
+type ApiClient struct {
+	r        *resty.Client
+	pt       *provider.T
+	Response *resty.Response
+}
 
-// func (a *ApiClient) GetTeams(filters map[string]string) []Team {
-// 	u := url.URL{Path: "teams"}
-// 	q := u.Query()
-// 	for k, v := range filters {
-// 		q.Set(k, v)
-// 	}
+func (a *ApiClient) GetTeams(filters map[string]string) []Team {
+	u := url.URL{Path: "teams"}
+	q := u.Query()
+	for k, v := range filters {
+		q.Set(k, v)
+	}
+	u.RawQuery = q.Encode()
 
-// 	u.RawQuery = q.Encode()
-// 	a.pt.WithNewParameters(" Request to 'teams'",
-// 		func(p provider.StpCtx) {}, allure.Parameter("path", filters))
-// 	_resp := r.R().Get(u.Parsed())
-// 	a.Response = _resp
-// 	var teams []Team
-// 	json.Unmarshall(_resp.Body(), &teams)
-// 	return teams
-// }
+	p := *a.pt
+	finalUrl := u.JoinPath().String()
+	fmt.Println(finalUrl)
+	p.WithNewStep("Send request to 'teams' endpoint", func(sCtx provider.StepCtx) {}, allure.NewParameter("path and query", finalUrl))
+	_resp, _ := a.r.R().Get(finalUrl)
+	a.Response = _resp
+	var teams []Team
+	json.Unmarshal(_resp.Body(), &teams)
+	return teams
+}
+
+func NewApiClient(pt *provider.T, r *resty.Client) ApiClient {
+	return ApiClient{r, pt, nil}
+}
