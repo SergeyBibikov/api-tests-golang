@@ -46,23 +46,6 @@ func Register(c *resty.Client, body RegStruct) *resty.Response {
 	return r
 }
 
-// func GetTeams(c *resty.Client, filters map[string]string) *resty.Response {
-// 	rr := url.URL{Path: "teams"}
-// 	q := rr.Query()
-
-// 	if len(filters) > 0 {
-// 		for k, v := range filters {
-// 			q.Set(k, v)
-// 		}
-// 	}
-// 	rr.RawQuery = q.Encode()
-// 	r, err := c.R().Get(rr.JoinPath().String())
-// 	if err != nil {
-// 		fmt.Println(err)
-// 	}
-// 	return r
-// }
-
 type RegStruct struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
