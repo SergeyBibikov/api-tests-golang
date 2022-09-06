@@ -1,11 +1,9 @@
 package tests
 
 import (
-	"encoding/json"
 	"testing"
 
 	"github.com/SergeyBibikov/api-tests-golang/src"
-	"github.com/ozontech/allure-go/pkg/allure"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 )
@@ -18,8 +16,8 @@ func (ts *TeamsSuite) TestTeamsQty(t provider.T) {
 	t.Story("Positive")
 
 	client := src.NewApiClient(&t, ts.client)
-	teams := client.GetTeams(nil)
-
+	teams, err := client.GetTeams(nil)
+	t.Assert().Nil(err)
 	t.Assert().Equal(len(teams), 30)
 }
 
@@ -30,9 +28,10 @@ func (ts *TeamsSuite) TestNameFilter(t provider.T) {
 	m["name"] = "Denver Nuggets"
 
 	client := src.NewApiClient(&t, ts.client)
-	teams := client.GetTeams(m)
+	teams, err := client.GetTeams(m)
 	r := client.Response
 
+	t.Assert().Nil(err)
 	t.Assert().Equal(200, r.StatusCode())
 	t.Assert().Equal(1, len(teams))
 	t.Assert().Equal("West", teams[0].Conf)
@@ -41,7 +40,6 @@ func (ts *TeamsSuite) TestNameFilter(t provider.T) {
 }
 
 func (ts *TeamsSuite) TestConferenceFilter(t provider.T) {
-	t.Story("Positive")
 
 	testCases := []struct {
 		conf string
@@ -50,17 +48,17 @@ func (ts *TeamsSuite) TestConferenceFilter(t provider.T) {
 		{conf: "West"},
 	}
 	for _, tC := range testCases {
+		t.Story("Positive")
 		tc := tC
 		t.Run(tc.conf, func(t provider.T) {
 			m := make(map[string]string)
 			m["conference"] = tc.conf
 
-			t.WithNewStep("Send request", func(sCtx provider.StepCtx) {}, allure.NewParameter("body", m))
-			r := src.GetTeams(ts.client, m)
-			var _t map[string][]src.Team
-			json.Unmarshal(r.Body(), &_t)
-			teams := _t["results"]
-			t.Assert().Equal(200, r.StatusCode())
+			client := src.NewApiClient(&t, ts.client)
+			teams, err := client.GetTeams(m)
+
+			t.Assert().Nil(err)
+			t.Assert().Equal(200, client.Response.StatusCode())
 			t.Assert().Equal(15, len(teams))
 		})
 	}
@@ -75,13 +73,11 @@ func (ts *TeamsSuite) TestAllFiltersButName(t provider.T) {
 	m["division"] = "Southwest"
 	m["est_year"] = "1980"
 
-	r := src.GetTeams(ts.client, m)
+	client := src.NewApiClient(&t, ts.client)
+	teams, err := client.GetTeams(m)
 
-	var _t map[string][]src.Team
-	json.Unmarshal(r.Body(), &_t)
-	teams := _t["results"]
-
-	t.Assert().Equal(200, r.StatusCode())
+	t.Assert().Nil(err)
+	t.Assert().Equal(200, client.Response.StatusCode())
 	t.Assert().Equal(1, len(teams))
 	t.Assert().Equal("Dallas Mavericks", teams[0].Name)
 }
@@ -92,12 +88,14 @@ func (ts *TeamsSuite) TestNameFilterDoesntAllowOtherFilters(t provider.T) {
 	m := make(map[string]string)
 	m["name"] = "Los Angeles Lakers"
 	m["conference"] = "West"
-	r := src.GetTeams(ts.client, m)
-	resp := src.ResponseBodyToMap(r.Body())
+
+	client := src.NewApiClient(&t, ts.client)
+	teams, err := client.GetTeams(m)
 
 	expectedMsg := "if name filter is present, other filters are not allowed"
-	t.Assert().Equal(400, r.StatusCode())
-	t.Assert().Equal(expectedMsg, resp["error"])
+	t.Assert().Nil(teams)
+	t.Assert().Equal(400, client.Response.StatusCode())
+	t.Assert().Equal(expectedMsg, err.Error())
 }
 
 func TestTeams(t *testing.T) {

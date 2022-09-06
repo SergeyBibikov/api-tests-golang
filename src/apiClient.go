@@ -2,6 +2,7 @@ package src
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 
@@ -45,22 +46,22 @@ func Register(c *resty.Client, body RegStruct) *resty.Response {
 	return r
 }
 
-func GetTeams(c *resty.Client, filters map[string]string) *resty.Response {
-	rr := url.URL{Path: "teams"}
-	q := rr.Query()
+// func GetTeams(c *resty.Client, filters map[string]string) *resty.Response {
+// 	rr := url.URL{Path: "teams"}
+// 	q := rr.Query()
 
-	if len(filters) > 0 {
-		for k, v := range filters {
-			q.Set(k, v)
-		}
-	}
-	rr.RawQuery = q.Encode()
-	r, err := c.R().Get(rr.JoinPath().String())
-	if err != nil {
-		fmt.Println(err)
-	}
-	return r
-}
+// 	if len(filters) > 0 {
+// 		for k, v := range filters {
+// 			q.Set(k, v)
+// 		}
+// 	}
+// 	rr.RawQuery = q.Encode()
+// 	r, err := c.R().Get(rr.JoinPath().String())
+// 	if err != nil {
+// 		fmt.Println(err)
+// 	}
+// 	return r
+// }
 
 type RegStruct struct {
 	Username string `json:"username"`
@@ -82,7 +83,7 @@ type ApiClient struct {
 	Response *resty.Response
 }
 
-func (a *ApiClient) GetTeams(filters map[string]string) []Team {
+func (a *ApiClient) GetTeams(filters map[string]string) ([]Team, error) {
 	u := url.URL{Path: "teams"}
 	q := u.Query()
 	for k, v := range filters {
@@ -96,9 +97,18 @@ func (a *ApiClient) GetTeams(filters map[string]string) []Team {
 	p.WithNewStep("Send request to 'teams' endpoint", func(sCtx provider.StepCtx) {}, allure.NewParameter("path and query", finalUrl))
 	_resp, _ := a.r.R().Get(finalUrl)
 	a.Response = _resp
+
+	if _resp.StatusCode() != 200 {
+		var m map[string]string
+		json.Unmarshal(_resp.Body(), &m)
+
+		return nil, errors.New(m["error"])
+	}
+
 	var teams []Team
 	json.Unmarshal(_resp.Body(), &teams)
-	return teams
+
+	return teams, nil
 }
 
 func NewApiClient(pt *provider.T, r *resty.Client) ApiClient {
