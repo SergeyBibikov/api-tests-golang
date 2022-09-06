@@ -17,12 +17,10 @@ type TeamsSuite struct {
 func (ts *TeamsSuite) TestTeamsQty(t provider.T) {
 	t.Story("Positive")
 
-	r := src.GetTeams(ts.client, nil)
+	client := src.NewApiClient(&t, ts.client)
+	teams := client.GetTeams(nil)
 
-	var tr map[string][]src.Team
-	json.Unmarshal(r.Body(), &tr)
-
-	t.Assert().Equal(len(tr["results"]), 30)
+	t.Assert().Equal(len(teams), 30)
 }
 
 func (ts *TeamsSuite) TestNameFilter(t provider.T) {
@@ -31,11 +29,9 @@ func (ts *TeamsSuite) TestNameFilter(t provider.T) {
 	m := make(map[string]string)
 	m["name"] = "Denver Nuggets"
 
-	r := src.GetTeams(ts.client, m)
-
-	var _t map[string][]src.Team
-	json.Unmarshal(r.Body(), &_t)
-	teams := _t["results"]
+	client := src.NewApiClient(&t, ts.client)
+	teams := client.GetTeams(m)
+	r := client.Response
 
 	t.Assert().Equal(200, r.StatusCode())
 	t.Assert().Equal(1, len(teams))
