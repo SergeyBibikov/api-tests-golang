@@ -94,6 +94,25 @@ func (a *ApiClient) GetTeams(filters map[string]string) ([]Team, error) {
 	return teams, nil
 }
 
+func (a *ApiClient) Register(body RegStruct) (string, error) {
+	req := a.r.R().SetBody(body)
+
+	prov := *a.pt
+	prov.WithNewStep("Send request to 'register' endpoint", func(sCtx provider.StepCtx) {}, allure.NewParameter("body", body))
+
+	resp, err := req.Post("/register")
+	if err != nil {
+		return "", err
+	}
+	a.Response = resp
+
+	m := ResponseBodyToMap(resp.Body())
+	if m["error"] != nil {
+		return "", errors.New(m["error"].(string))
+	}
+	return m["message"].(string), nil
+}
+
 func NewApiClient(pt *provider.T, r *resty.Client) ApiClient {
 	return ApiClient{r, pt, nil}
 }

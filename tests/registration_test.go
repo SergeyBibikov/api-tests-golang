@@ -19,6 +19,7 @@ func (to *RegistrationSuite) BeforeEach(t provider.T) {
 }
 
 // TODO: check user was added to the db
+// TODL: replace Register func in all tests
 func (to *RegistrationSuite) TestSuccessfulRegistration(t provider.T) {
 	t.Parallel()
 	t.Story("Positive")
@@ -26,15 +27,16 @@ func (to *RegistrationSuite) TestSuccessfulRegistration(t provider.T) {
 	u := src.GetRandomString(5)
 	p := fmt.Sprintf("As%s", src.GetRandomString(6))
 	e := fmt.Sprintf("%s@gmail.com", src.GetRandomString(5))
-	r := src.Register(to.client, src.RegStruct{
+
+	client := src.NewApiClient(&t, to.client)
+	message, err := client.Register(src.RegStruct{
 		Username: u,
 		Password: p,
 		Email:    e})
-	resp := src.ResponseBodyToMap(r.Body())
 
-	t.Assert().Equal(201, r.StatusCode())
-	t.Assert().Nil(resp["error"])
-	t.Assert().Equal("user created", resp["message"])
+	t.Assert().Equal(201, client.Response.StatusCode())
+	t.Assert().Nil(err)
+	t.Assert().Equal("user created", message)
 }
 
 func (to *RegistrationSuite) TestValidationOfEmptyFields(t provider.T) {
