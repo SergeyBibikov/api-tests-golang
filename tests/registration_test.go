@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/SergeyBibikov/api-tests-golang/src"
-	"github.com/ozontech/allure-go/pkg/allure"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 )
@@ -19,7 +18,6 @@ func (to *RegistrationSuite) BeforeEach(t provider.T) {
 }
 
 // TODO: check user was added to the db
-// TODO: replace Register func in all tests
 func (to *RegistrationSuite) TestSuccessfulRegistration(t provider.T) {
 	t.Parallel()
 	t.Story("Positive")
@@ -64,13 +62,12 @@ func (to *RegistrationSuite) TestValidationOfEmptyFields(t provider.T) {
 				Password: tc.password,
 				Email:    tc.email}
 
-			t.WithNewStep("Send request", func(sCtx provider.StepCtx) {}, allure.NewParameter("body", b))
+			client := src.NewApiClient(&t, to.client)
+			message, err := client.Register(b)
 
-			r := src.Register(to.client, b)
-			resp := src.ResponseBodyToMap(r.Body())
-
-			t.Assert().Equal(400, r.StatusCode())
-			t.Assert().Equal("Username, password and email are required", resp["error"])
+			t.Assert().Equal(message, "")
+			t.Assert().Equal(400, client.Response.StatusCode())
+			t.Assert().Equal("Username, password and email are required", err.Error())
 		})
 	}
 }
@@ -101,12 +98,13 @@ func (to *RegistrationSuite) TestValidationEmailFormat(t provider.T) {
 				Username: src.GetRandomString(6),
 				Password: src.GetRandomString(8),
 				Email:    tc.email}
+
 			client := src.NewApiClient(&t, to.client)
-			message, error := client.Register(b)
+			message, err := client.Register(b)
 
 			t.Assert().Equal(message, "")
 			t.Assert().Equal(400, client.Response.StatusCode())
-			t.Assert().Equal("The email has an invalid format", error.Error())
+			t.Assert().Equal("The email has an invalid format", err.Error())
 		})
 	}
 }
