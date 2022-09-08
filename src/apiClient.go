@@ -108,7 +108,7 @@ func (a *ApiClient) Register(body RegStruct) RegisterResponse {
 	a.Response = resp
 	var r RegisterResponse
 	json.Unmarshal(resp.Body(), &r)
-
+	r.StatusCode = resp.StatusCode()
 	return r
 }
 
@@ -117,7 +117,8 @@ func NewApiClient(pt *provider.T, r *resty.Client) ApiClient {
 }
 
 type RegisterResponse struct {
-	Message string `json:"message,omitempty"`
-	UserId  int    `json:"userId,omitempty"`
-	Error   string `json:"error,omitempty"`
+	StatusCode int
+	Message    string `json:"message,omitempty"`
+	UserId     int    `json:"userId,omitempty"`
+	Error      string `json:"error,omitempty"`
 }

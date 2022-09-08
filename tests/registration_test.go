@@ -32,7 +32,7 @@ func (to *RegistrationSuite) TestSuccessfulRegistration(t provider.T) {
 		Password: p,
 		Email:    e})
 
-	t.Assert().Equal(201, client.Response.StatusCode())
+	t.Assert().Equal(201, resp.StatusCode)
 	t.Assert().Equal(resp.Error, "")
 	t.Assert().Equal("user created", resp.Message)
 }
@@ -66,7 +66,7 @@ func (to *RegistrationSuite) TestValidationOfEmptyFields(t provider.T) {
 			resp := client.Register(b)
 
 			t.Assert().Equal(resp.Message, "")
-			t.Assert().Equal(400, client.Response.StatusCode())
+			t.Assert().Equal(400, resp.StatusCode)
 			t.Assert().Equal("Username, password and email are required", resp.Error)
 		})
 	}
@@ -103,7 +103,7 @@ func (to *RegistrationSuite) TestValidationEmailFormat(t provider.T) {
 			resp := client.Register(b)
 
 			t.Assert().Equal(resp.Message, "")
-			t.Assert().Equal(400, client.Response.StatusCode())
+			t.Assert().Equal(400, resp.StatusCode)
 			t.Assert().Equal("The email has an invalid format", resp.Error)
 		})
 	}
