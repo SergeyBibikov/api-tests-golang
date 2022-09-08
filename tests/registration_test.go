@@ -19,7 +19,7 @@ func (to *RegistrationSuite) BeforeEach(t provider.T) {
 }
 
 // TODO: check user was added to the db
-// TODL: replace Register func in all tests
+// TODO: replace Register func in all tests
 func (to *RegistrationSuite) TestSuccessfulRegistration(t provider.T) {
 	t.Parallel()
 	t.Story("Positive")
@@ -101,12 +101,12 @@ func (to *RegistrationSuite) TestValidationEmailFormat(t provider.T) {
 				Username: src.GetRandomString(6),
 				Password: src.GetRandomString(8),
 				Email:    tc.email}
-			t.WithNewStep("Send request", func(sCtx provider.StepCtx) {}, allure.NewParameter("body", b))
-			r := src.Register(to.client, b)
-			resp := src.ResponseBodyToMap(r.Body())
+			client := src.NewApiClient(&t, to.client)
+			message, error := client.Register(b)
 
-			t.Assert().Equal(400, r.StatusCode())
-			t.Assert().Equal("The email has an invalid format", resp["error"])
+			t.Assert().Equal(message, "")
+			t.Assert().Equal(400, client.Response.StatusCode())
+			t.Assert().Equal("The email has an invalid format", error.Error())
 		})
 	}
 }
