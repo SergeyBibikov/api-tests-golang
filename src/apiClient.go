@@ -94,7 +94,7 @@ func (a *ApiClient) GetTeams(filters map[string]string) ([]Team, error) {
 	return teams, nil
 }
 
-func (a *ApiClient) Register(body RegStruct) (string, error) {
+func (a *ApiClient) Register(body RegStruct) RegisterResponse {
 	req := a.r.R().SetBody(body)
 
 	prov := *a.pt
@@ -102,17 +102,22 @@ func (a *ApiClient) Register(body RegStruct) (string, error) {
 
 	resp, err := req.Post("/register")
 	if err != nil {
-		return "", err
+		return RegisterResponse{Error: err.Error()}
 	}
-	a.Response = resp
 
-	m := ResponseBodyToMap(resp.Body())
-	if m["error"] != nil {
-		return "", errors.New(m["error"].(string))
-	}
-	return m["message"].(string), nil
+	a.Response = resp
+	var r RegisterResponse
+	json.Unmarshal(resp.Body(), &r)
+
+	return r
 }
 
 func NewApiClient(pt *provider.T, r *resty.Client) ApiClient {
 	return ApiClient{r, pt, nil}
+}
+
+type RegisterResponse struct {
+	Message string `json:"message,omitempty"`
+	UserId  int    `json:"userId,omitempty"`
+	Error   string `json:"error,omitempty"`
 }

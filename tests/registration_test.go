@@ -27,14 +27,14 @@ func (to *RegistrationSuite) TestSuccessfulRegistration(t provider.T) {
 	e := fmt.Sprintf("%s@gmail.com", src.GetRandomString(5))
 
 	client := src.NewApiClient(&t, to.client)
-	message, err := client.Register(src.RegStruct{
+	resp := client.Register(src.RegStruct{
 		Username: u,
 		Password: p,
 		Email:    e})
 
 	t.Assert().Equal(201, client.Response.StatusCode())
-	t.Assert().Nil(err)
-	t.Assert().Equal("user created", message)
+	t.Assert().Equal(resp.Error, "")
+	t.Assert().Equal("user created", resp.Message)
 }
 
 func (to *RegistrationSuite) TestValidationOfEmptyFields(t provider.T) {
@@ -63,11 +63,11 @@ func (to *RegistrationSuite) TestValidationOfEmptyFields(t provider.T) {
 				Email:    tc.email}
 
 			client := src.NewApiClient(&t, to.client)
-			message, err := client.Register(b)
+			resp := client.Register(b)
 
-			t.Assert().Equal(message, "")
+			t.Assert().Equal(resp.Message, "")
 			t.Assert().Equal(400, client.Response.StatusCode())
-			t.Assert().Equal("Username, password and email are required", err.Error())
+			t.Assert().Equal("Username, password and email are required", resp.Error)
 		})
 	}
 }
@@ -100,11 +100,11 @@ func (to *RegistrationSuite) TestValidationEmailFormat(t provider.T) {
 				Email:    tc.email}
 
 			client := src.NewApiClient(&t, to.client)
-			message, err := client.Register(b)
+			resp := client.Register(b)
 
-			t.Assert().Equal(message, "")
+			t.Assert().Equal(resp.Message, "")
 			t.Assert().Equal(400, client.Response.StatusCode())
-			t.Assert().Equal("The email has an invalid format", err.Error())
+			t.Assert().Equal("The email has an invalid format", resp.Error)
 		})
 	}
 }
