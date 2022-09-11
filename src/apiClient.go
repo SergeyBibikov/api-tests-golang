@@ -3,7 +3,6 @@ package src
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/url"
 
 	"github.com/go-resty/resty/v2"
@@ -70,7 +69,6 @@ func (a *ApiClient) GetTeams(filters map[string]string) ([]Team, error) {
 
 	p := *a.pt
 	finalUrl := u.JoinPath().String()
-	fmt.Println(finalUrl)
 	p.WithNewStep("Send request to 'teams' endpoint", func(sCtx provider.StepCtx) {}, allure.NewParameter("path and query", finalUrl))
 	_resp, _ := a.r.R().Get(finalUrl)
 	a.Response = _resp
