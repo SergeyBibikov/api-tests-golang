@@ -46,7 +46,7 @@ type Team struct {
 
 type TeamsResponse struct {
 	Teams      []Team
-	Error      string `json:"error"`
+	Error      string `json:"error,omitempty"`
 	StatusCode int
 }
 
@@ -99,6 +99,7 @@ func (a *ApiClient) GetTeams(filters map[string]string) TeamsResponse {
 	p.WithNewStep("Send request to '"+finalUrl+"'", func(sCtx provider.StepCtx) {})
 	resp, body := get(finalUrl)
 	a.Response = resp
+
 	var tr TeamsResponse
 	if resp.StatusCode != 200 {
 		json.Unmarshal(body, &tr)
