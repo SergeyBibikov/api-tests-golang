@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/SergeyBibikov/api-tests-golang/src"
@@ -15,10 +16,9 @@ type TeamsSuite struct {
 func (ts *TeamsSuite) TestTeamsQty(t provider.T) {
 	t.Story("Positive")
 
-	client := src.NewApiClient(&t, ts.client)
-	teams, err := client.GetTeams(nil)
-	t.Assert().Nil(err)
-	t.Assert().Equal(len(teams), 30)
+	client := src.NewApiClient(&t)
+	resp := client.GetTeams(nil)
+	t.Assert().Equal(len(resp.Teams), 30)
 }
 
 func (ts *TeamsSuite) TestNameFilter(t provider.T) {
@@ -27,16 +27,15 @@ func (ts *TeamsSuite) TestNameFilter(t provider.T) {
 	m := make(map[string]string)
 	m["name"] = "Denver Nuggets"
 
-	client := src.NewApiClient(&t, ts.client)
-	teams, err := client.GetTeams(m)
+	client := src.NewApiClient(&t)
+	resp := client.GetTeams(m)
 	r := client.Response
 
-	t.Assert().Nil(err)
-	t.Assert().Equal(200, r.StatusCode())
-	t.Assert().Equal(1, len(teams))
-	t.Assert().Equal("West", teams[0].Conf)
-	t.Assert().Equal("Northwest", teams[0].Div)
-	t.Assert().Equal(1974, teams[0].Year)
+	t.Assert().Equal(200, r.StatusCode)
+	t.Assert().Equal(1, len(resp.Teams))
+	t.Assert().Equal("West", resp.Teams[0].Conf)
+	t.Assert().Equal("Northwest", resp.Teams[0].Div)
+	t.Assert().Equal(1974, resp.Teams[0].Year)
 }
 
 func (ts *TeamsSuite) TestConferenceFilter(t provider.T) {
@@ -54,12 +53,11 @@ func (ts *TeamsSuite) TestConferenceFilter(t provider.T) {
 			m := make(map[string]string)
 			m["conference"] = tc.conf
 
-			client := src.NewApiClient(&t, ts.client)
-			teams, err := client.GetTeams(m)
+			client := src.NewApiClient(&t)
+			resp := client.GetTeams(m)
 
-			t.Assert().Nil(err)
-			t.Assert().Equal(200, client.Response.StatusCode())
-			t.Assert().Equal(15, len(teams))
+			t.Assert().Equal(200, resp.StatusCode)
+			t.Assert().Equal(15, len(resp.Teams))
 		})
 	}
 
@@ -73,13 +71,12 @@ func (ts *TeamsSuite) TestAllFiltersButName(t provider.T) {
 	m["division"] = "Southwest"
 	m["est_year"] = "1980"
 
-	client := src.NewApiClient(&t, ts.client)
-	teams, err := client.GetTeams(m)
+	client := src.NewApiClient(&t)
+	resp := client.GetTeams(m)
 
-	t.Assert().Nil(err)
-	t.Assert().Equal(200, client.Response.StatusCode())
-	t.Assert().Equal(1, len(teams))
-	t.Assert().Equal("Dallas Mavericks", teams[0].Name)
+	t.Assert().Equal(200, resp.StatusCode)
+	t.Assert().Equal(1, len(resp.Teams))
+	t.Assert().Equal("Dallas Mavericks", resp.Teams[0].Name)
 }
 
 func (ts *TeamsSuite) TestNameFilterDoesntAllowOtherFilters(t provider.T) {
@@ -89,13 +86,13 @@ func (ts *TeamsSuite) TestNameFilterDoesntAllowOtherFilters(t provider.T) {
 	m["name"] = "Los Angeles Lakers"
 	m["conference"] = "West"
 
-	client := src.NewApiClient(&t, ts.client)
-	teams, err := client.GetTeams(m)
-
+	client := src.NewApiClient(&t)
+	resp := client.GetTeams(m)
+	fmt.Println(resp)
 	expectedMsg := "if name filter is present, other filters are not allowed"
-	t.Assert().Nil(teams)
-	t.Assert().Equal(400, client.Response.StatusCode())
-	t.Assert().Equal(expectedMsg, err.Error())
+	t.Assert().Nil(resp.Teams)
+	t.Assert().Equal(400, resp.StatusCode)
+	t.Assert().Equal(expectedMsg, resp.Error)
 }
 
 func TestTeams(t *testing.T) {

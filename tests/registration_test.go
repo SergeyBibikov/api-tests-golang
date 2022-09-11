@@ -26,7 +26,7 @@ func (to *RegistrationSuite) TestSuccessfulRegistration(t provider.T) {
 	p := fmt.Sprintf("As%s", src.GetRandomString(6))
 	e := fmt.Sprintf("%s@gmail.com", src.GetRandomString(5))
 
-	client := src.NewApiClient(&t, to.client)
+	client := src.NewApiClient(&t)
 	resp := client.Register(src.RegStruct{
 		Username: u,
 		Password: p,
@@ -62,7 +62,7 @@ func (to *RegistrationSuite) TestValidationOfEmptyFields(t provider.T) {
 				Password: tc.password,
 				Email:    tc.email}
 
-			client := src.NewApiClient(&t, to.client)
+			client := src.NewApiClient(&t)
 			resp := client.Register(b)
 
 			t.Assert().Equal(resp.Message, "")
@@ -73,7 +73,6 @@ func (to *RegistrationSuite) TestValidationOfEmptyFields(t provider.T) {
 }
 
 func (to *RegistrationSuite) TestValidationEmailFormat(t provider.T) {
-
 	var testCases = []struct {
 		testName string
 		email    string
@@ -99,7 +98,7 @@ func (to *RegistrationSuite) TestValidationEmailFormat(t provider.T) {
 				Password: src.GetRandomString(8),
 				Email:    tc.email}
 
-			client := src.NewApiClient(&t, to.client)
+			client := src.NewApiClient(&t)
 			resp := client.Register(b)
 
 			t.Assert().Equal(resp.Message, "")

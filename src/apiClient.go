@@ -1,14 +1,54 @@
 package src
 
 import (
+	"bytes"
 	"encoding/json"
-	"errors"
+	"io"
+	"net/http"
 	"net/url"
 
 	"github.com/go-resty/resty/v2"
 	"github.com/ozontech/allure-go/pkg/allure"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 )
+
+const BASE_URL = "http://localhost:8080"
+
+type Bodies interface {
+	RegStruct | RegisterResponse | Team
+}
+
+func getJson[V Bodies](body V) []byte {
+	b, _ := json.Marshal(body)
+	return b
+}
+
+type RegStruct struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Email    string `json:"email"`
+}
+
+type RegisterResponse struct {
+	StatusCode int
+	Message    string `json:"message,omitempty"`
+	UserId     int    `json:"userId,omitempty"`
+	Error      string `json:"error,omitempty"`
+}
+
+type Team struct {
+	Id   int    `json:"id"`
+	Name string `json:"name"`
+	Conf string `json:"conference"`
+	Div  string `json:"division"`
+	Year int    `json:"est_year"`
+}
+
+type TeamsResponse struct {
+	Teams      []Team
+	Error      string `json:"error"`
+	StatusCode int
+}
 
 func ResponseBodyToMap(r []byte) map[string]interface{} {
 	var resp map[string]interface{}
@@ -39,28 +79,15 @@ func ValidateToken(c *resty.Client, token string) *resty.Response {
 	return r
 }
 
-type RegStruct struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Email    string `json:"email"`
-}
-
-type Team struct {
-	Id   int    `json:"id"`
-	Name string `json:"name"`
-	Conf string `json:"conference"`
-	Div  string `json:"division"`
-	Year int    `json:"est_year"`
-}
-
 type ApiClient struct {
-	r        *resty.Client
+	_url     *url.URL
 	pt       *provider.T
-	Response *resty.Response
+	Response *http.Response
 }
 
-func (a *ApiClient) GetTeams(filters map[string]string) ([]Team, error) {
-	u := url.URL{Path: "teams"}
+func (a *ApiClient) GetTeams(filters map[string]string) TeamsResponse {
+	u := a._url
+	u.Path = "teams"
 	q := u.Query()
 	for k, v := range filters {
 		q.Set(k, v)
@@ -68,49 +95,63 @@ func (a *ApiClient) GetTeams(filters map[string]string) ([]Team, error) {
 	u.RawQuery = q.Encode()
 
 	p := *a.pt
-	finalUrl := u.JoinPath().String()
-	p.WithNewStep("Send request to 'teams' endpoint", func(sCtx provider.StepCtx) {}, allure.NewParameter("path and query", finalUrl))
-	_resp, _ := a.r.R().Get(finalUrl)
-	a.Response = _resp
-
-	if _resp.StatusCode() != 200 {
-		var m map[string]string
-		json.Unmarshal(_resp.Body(), &m)
-
-		return nil, errors.New(m["error"])
+	finalUrl := u.String()
+	p.WithNewStep("Send request to '"+finalUrl+"'", func(sCtx provider.StepCtx) {})
+	resp, body := get(finalUrl)
+	a.Response = resp
+	var tr TeamsResponse
+	if resp.StatusCode != 200 {
+		json.Unmarshal(body, &tr)
+	} else {
+		json.Unmarshal(body, &tr.Teams)
 	}
+	tr.StatusCode = resp.StatusCode
 
-	var teams []Team
-	json.Unmarshal(_resp.Body(), &teams)
-
-	return teams, nil
+	return tr
 }
 
 func (a *ApiClient) Register(body RegStruct) RegisterResponse {
-	req := a.r.R().SetBody(body)
 
 	prov := *a.pt
 	prov.WithNewStep("Send request to 'register' endpoint", func(sCtx provider.StepCtx) {}, allure.NewParameter("body", body))
 
-	resp, err := req.Post("/register")
+	a._url.Path = "register"
+	resp, b, err := post(a._url.String(), getJson(body))
 	if err != nil {
 		return RegisterResponse{Error: err.Error()}
 	}
 
-	a.Response = resp
 	var r RegisterResponse
-	json.Unmarshal(resp.Body(), &r)
-	r.StatusCode = resp.StatusCode()
+	json.Unmarshal(b, &r)
+	r.StatusCode = resp.StatusCode
 	return r
 }
 
-func NewApiClient(pt *provider.T, r *resty.Client) ApiClient {
-	return ApiClient{r, pt, nil}
+func NewApiClient(pt *provider.T) ApiClient {
+	_url, _ := url.Parse(BASE_URL)
+
+	return ApiClient{_url, pt, nil}
 }
 
-type RegisterResponse struct {
-	StatusCode int
-	Message    string `json:"message,omitempty"`
-	UserId     int    `json:"userId,omitempty"`
-	Error      string `json:"error,omitempty"`
+func get(url string) (*http.Response, []byte) {
+	resp, _ := http.Get(url)
+	b, _ := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	return resp, b
+}
+
+func post(url string, body []byte) (*http.Response, []byte, error) {
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	b, err := io.ReadAll(resp.Body)
+	defer resp.Body.Close()
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return resp, b, nil
 }
