@@ -17,7 +17,7 @@ func (to *GetTokenSuite) BeforeEach(t provider.T) {
 	t.Feature("Get token")
 }
 
-func (to *GetTokenSuite) Test_SuccessfullGetToken_Wrapper(t provider.T) {
+func (to *GetTokenSuite) Test_Positive_GetToken_Wrapper(t provider.T) {
 	testCases := []struct {
 		testName      string
 		username      string
@@ -49,56 +49,57 @@ func (to *GetTokenSuite) Test_SuccessfullGetToken_Wrapper(t provider.T) {
 			t.Story("Positive")
 
 			client := src.NewApiClient(&t)
-			resp := client.GetToken(src.GetTokenRequest{tC.username, tC.password})
+			resp := client.GetToken(src.GetTokenRequest{Username: tC.username, Password: tC.password})
 
 			t.Assert().Equal(200, resp.StatusCode)
 			t.Assert().Equal(tC.expectedToken, resp.Token)
 		})
 	}
 }
+func (to *GetTokenSuite) Test_Negative_GetToken_Wrapper(t provider.T) {
+	testCases := []struct {
+		testName      string
+		username      string
+		password      string
+		expectedError string
+	}{
+		{
+			testName:      "Wrong username",
+			username:      "Mike1",
+			password:      "MikePass",
+			expectedError: "invalid username and/or password",
+		},
+		{
+			testName:      "Wrong password",
+			username:      "Mike",
+			password:      "MikePass1",
+			expectedError: "invalid username and/or password",
+		},
+		{
+			testName:      "No password",
+			username:      "Mike",
+			password:      "",
+			expectedError: "Password is a required field",
+		},
+		{
+			testName:      "No username",
+			username:      "",
+			password:      "MikePass",
+			expectedError: "Username is a required field",
+		},
+	}
+	for _, tC := range testCases {
+		tC := tC
+		t.Run(tC.testName, func(t provider.T) {
+			t.Story("Negative")
 
-func (to *GetTokenSuite) TestGetTokenWithWrongUsername(t provider.T) {
-	t.Parallel()
-	t.Story("Negative")
+			client := src.NewApiClient(&t)
+			resp := client.GetToken(src.GetTokenRequest{Username: tC.username, Password: tC.password})
 
-	r := src.GetToken(to.client, "Mike1", "MikePass")
-	resp := src.ResponseBodyToMap(r.Body())
-
-	t.Assert().Equal(400, r.StatusCode())
-	t.Assert().Equal(resp["error"], "invalid username and/or password")
-}
-
-func (to *GetTokenSuite) TestGetTokenWithWrongPassword(t provider.T) {
-	t.Parallel()
-	t.Story("Negative")
-
-	r := src.GetToken(to.client, "Mike", "MikePass1")
-	resp := src.ResponseBodyToMap(r.Body())
-
-	t.Assert().Equal(400, r.StatusCode())
-	t.Assert().Equal(resp["error"], "invalid username and/or password")
-}
-
-func (to *GetTokenSuite) TestGetTokenWithoutPasswordInBody(t provider.T) {
-	t.Parallel()
-	t.Story("Negative")
-
-	r := src.GetToken(to.client, "Mike", "")
-	resp := src.ResponseBodyToMap(r.Body())
-
-	t.Assert().Equal(400, r.StatusCode())
-	t.Assert().Equal(resp["error"], "Password is a required field")
-}
-
-func (to *GetTokenSuite) TestGetTokenWithoutUsernameInBody(t provider.T) {
-	t.Parallel()
-	t.Story("Negative")
-
-	r := src.GetToken(to.client, "", "MikePass1")
-	resp := src.ResponseBodyToMap(r.Body())
-
-	t.Assert().Equal(400, r.StatusCode())
-	t.Assert().Equal(resp["error"], "Username is a required field")
+			t.Assert().Equal(400, resp.StatusCode)
+			t.Assert().Equal(tC.expectedError, resp.Error)
+		})
+	}
 }
 
 func TestGetToken(t *testing.T) {

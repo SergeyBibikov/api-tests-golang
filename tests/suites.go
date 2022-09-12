@@ -26,6 +26,6 @@ func (s *BaseSuite) BeforeAll(t provider.T) {
 		time.Sleep(100 * time.Millisecond)
 	}
 	if err != nil {
-		s.GetRunner().T().Errorf("The service was not available for 2 seconds %s", err)
+		t.Fatalf("The service was not available for 2 seconds %s", err)
 	}
 }
