@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/go-resty/resty/v2"
 	"github.com/ozontech/allure-go/pkg/allure"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 )
@@ -30,6 +29,11 @@ type GetTokenRequest struct {
 
 type GetTokenResponse struct {
 	Token      string `json:"token,omitempty"`
+	Error      string `json:"error,omitempty"`
+	StatusCode int
+}
+
+type ValidationTokenResponse struct {
 	Error      string `json:"error,omitempty"`
 	StatusCode int
 }
@@ -67,27 +71,23 @@ type TeamsResponse struct {
 // 	return resp
 // }
 
-// func GetToken(c *resty.Client, uname string, pass string) *resty.Response {
+func (a *ApiClient) ValidateToken(token string) ValidationTokenResponse {
+	a._url.Path = "token/validate"
+	m := make(map[string]string)
+	m["token"] = token
+	b, _ := json.Marshal(m)
 
-// 	body := make(map[string]string)
-// 	if uname != "" {
-// 		body["username"] = uname
-// 	}
-// 	if pass != "" {
-// 		body["password"] = pass
-// 	}
+	var vtr ValidationTokenResponse
+	resp, body, err := post(a._url.String(), b)
+	if err != nil {
+		vtr.Error = err.Error()
+		return vtr
+	}
+	a.Response = resp
 
-// 	req := c.R().SetBody(body)
-// 	r, _ := req.Post("/token/get")
-// 	return r
-// }
-
-func ValidateToken(c *resty.Client, token string) *resty.Response {
-	req := c.R().SetBody(map[string]string{
-		"token": token,
-	})
-	r, _ := req.Post("/token/validate")
-	return r
+	json.Unmarshal(body, &vtr)
+	vtr.StatusCode = resp.StatusCode
+	return vtr
 }
 
 type ApiClient struct {
