@@ -15,12 +15,23 @@ import (
 const BASE_URL = "http://localhost:8080"
 
 type Bodies interface {
-	RegStruct | RegisterResponse | Team
+	GetTokenRequest | RegStruct | RegisterResponse | Team
 }
 
 func getJson[V Bodies](body V) []byte {
 	b, _ := json.Marshal(body)
 	return b
+}
+
+type GetTokenRequest struct {
+	Username string `json:"username,omitempty"`
+	Password string `json:"password,omitempty"`
+}
+
+type GetTokenResponse struct {
+	Token      string `json:"token,omitempty"`
+	Error      string `json:"error,omitempty"`
+	StatusCode int
 }
 
 type RegStruct struct {
@@ -50,26 +61,26 @@ type TeamsResponse struct {
 	StatusCode int
 }
 
-func ResponseBodyToMap(r []byte) map[string]interface{} {
-	var resp map[string]interface{}
-	json.Unmarshal(r, &resp)
-	return resp
-}
+// func ResponseBodyToMap(r []byte) map[string]interface{} {
+// 	var resp map[string]interface{}
+// 	json.Unmarshal(r, &resp)
+// 	return resp
+// }
 
-func GetToken(c *resty.Client, uname string, pass string) *resty.Response {
+// func GetToken(c *resty.Client, uname string, pass string) *resty.Response {
 
-	body := make(map[string]string)
-	if uname != "" {
-		body["username"] = uname
-	}
-	if pass != "" {
-		body["password"] = pass
-	}
+// 	body := make(map[string]string)
+// 	if uname != "" {
+// 		body["username"] = uname
+// 	}
+// 	if pass != "" {
+// 		body["password"] = pass
+// 	}
 
-	req := c.R().SetBody(body)
-	r, _ := req.Post("/token/get")
-	return r
-}
+// 	req := c.R().SetBody(body)
+// 	r, _ := req.Post("/token/get")
+// 	return r
+// }
 
 func ValidateToken(c *resty.Client, token string) *resty.Response {
 	req := c.R().SetBody(map[string]string{
@@ -83,6 +94,26 @@ type ApiClient struct {
 	_url     *url.URL
 	pt       *provider.T
 	Response *http.Response
+}
+
+func (a *ApiClient) GetToken(gtb GetTokenRequest) GetTokenResponse {
+	a._url.Path = "token/get"
+	finalUrl := a._url.String()
+
+	p := *a.pt
+	p.WithNewStep("Send request to 'token/get'", func(sCtx provider.StepCtx) {}, allure.NewParameter("body", gtb))
+
+	resp, body, err := post(finalUrl, getJson(gtb))
+	if err != nil {
+		return GetTokenResponse{Error: err.Error()}
+	}
+	a.Response = resp
+
+	var gtr GetTokenResponse
+	json.Unmarshal(body, &gtr)
+	gtr.StatusCode = resp.StatusCode
+
+	return gtr
 }
 
 func (a *ApiClient) GetTeams(filters map[string]string) TeamsResponse {

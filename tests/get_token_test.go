@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/SergeyBibikov/api-tests-golang/src"
@@ -17,46 +16,45 @@ func (to *GetTokenSuite) BeforeEach(t provider.T) {
 	t.Epic("Token tests")
 	t.Feature("Get token")
 }
-func (to *GetTokenSuite) TestGetAdminToken(t provider.T) {
-	t.Parallel()
-	t.Story("Positive")
 
-	username := "Jack"
-	password := "JackPass"
+func (to *GetTokenSuite) Test_SuccessfullGetToken_Wrapper(t provider.T) {
+	testCases := []struct {
+		testName      string
+		username      string
+		password      string
+		expectedToken string
+	}{
+		{
+			testName:      "Get admin token",
+			username:      "Jack",
+			password:      "JackPass",
+			expectedToken: "Admin_token_Jack",
+		},
+		{
+			testName:      "Get regular user token",
+			username:      "Steve",
+			password:      "StevePass",
+			expectedToken: "Regular_token_Steve",
+		},
+		{
+			testName:      "Get premium user token",
+			username:      "Mike",
+			password:      "MikePass",
+			expectedToken: "Premium_token_Mike",
+		},
+	}
+	for _, tC := range testCases {
+		tC := tC
+		t.Run(tC.testName, func(t provider.T) {
+			t.Story("Positive")
 
-	r := src.GetToken(to.client, username, password)
-	resp := src.ResponseBodyToMap(r.Body())
+			client := src.NewApiClient(&t)
+			resp := client.GetToken(src.GetTokenRequest{tC.username, tC.password})
 
-	t.Assert().Equal(200, r.StatusCode())
-	t.Assert().Equal(resp["token"], fmt.Sprintf("Admin_token_%s", username))
-}
-
-func (to *GetTokenSuite) TestGetRegularUserToken(t provider.T) {
-	t.Parallel()
-	t.Story("Positive")
-
-	username := "Steve"
-	password := "StevePass"
-
-	r := src.GetToken(to.client, username, password)
-	resp := src.ResponseBodyToMap(r.Body())
-
-	t.Assert().Equal(200, r.StatusCode())
-	t.Assert().Equal(resp["token"], fmt.Sprintf("Regular_token_%s", username))
-}
-
-func (to *GetTokenSuite) TestGetPremiumUserToken(t provider.T) {
-	t.Parallel()
-	t.Story("Positive")
-
-	username := "Mike"
-	password := "MikePass"
-
-	r := src.GetToken(to.client, username, password)
-	resp := src.ResponseBodyToMap(r.Body())
-
-	t.Assert().Equal(200, r.StatusCode())
-	t.Assert().Equal(resp["token"], fmt.Sprintf("Premium_token_%s", username))
+			t.Assert().Equal(200, resp.StatusCode)
+			t.Assert().Equal(tC.expectedToken, resp.Token)
+		})
+	}
 }
 
 func (to *GetTokenSuite) TestGetTokenWithWrongUsername(t provider.T) {
