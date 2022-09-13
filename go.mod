@@ -3,7 +3,6 @@ module github.com/SergeyBibikov/api-tests-golang
 go 1.19
 
 require (
-	github.com/go-resty/resty/v2 v2.7.0
 	github.com/jackc/pgx/v4 v4.17.0
 	github.com/ozontech/allure-go/pkg/allure v0.6.2
 	github.com/ozontech/allure-go/pkg/framework v0.6.14
@@ -23,7 +22,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stretchr/testify v1.8.0 // indirect
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa // indirect
-	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

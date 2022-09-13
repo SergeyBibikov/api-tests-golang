@@ -65,12 +65,6 @@ type TeamsResponse struct {
 	StatusCode int
 }
 
-// func ResponseBodyToMap(r []byte) map[string]interface{} {
-// 	var resp map[string]interface{}
-// 	json.Unmarshal(r, &resp)
-// 	return resp
-// }
-
 func (a *ApiClient) ValidateToken(token string) ValidationTokenResponse {
 	a._url.Path = "token/validate"
 	m := make(map[string]string)
@@ -96,6 +90,11 @@ type ApiClient struct {
 	Response *http.Response
 }
 
+func (a *ApiClient) Ready() bool {
+	a._url.Path = "ready"
+	r, _ := get(a._url.String())
+	return r.StatusCode == 200
+}
 func (a *ApiClient) GetToken(gtb GetTokenRequest) GetTokenResponse {
 	a._url.Path = "token/get"
 	finalUrl := a._url.String()
