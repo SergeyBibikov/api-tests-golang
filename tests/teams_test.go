@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/SergeyBibikov/api-tests-golang/src"
@@ -13,7 +12,7 @@ type TeamsSuite struct {
 	BaseSuite
 }
 
-func (ts *TeamsSuite) TestTeamsQty(t provider.T) {
+func (ts *TeamsSuite) TestAllTeamsQty(t provider.T) {
 	t.Story("Positive")
 
 	client := src.NewApiClient(&t)
@@ -88,11 +87,53 @@ func (ts *TeamsSuite) TestNameFilterDoesntAllowOtherFilters(t provider.T) {
 
 	client := src.NewApiClient(&t)
 	resp := client.GetTeams(m)
-	fmt.Println(resp)
+
 	expectedMsg := "if name filter is present, other filters are not allowed"
 	t.Assert().Nil(resp.Teams)
 	t.Assert().Equal(400, resp.StatusCode)
 	t.Assert().Equal(expectedMsg, resp.Error)
+}
+
+func (ts *TeamsSuite) Test_NoResultsMatchingFilter_Wrapper(t provider.T) {
+	testCases := []struct {
+		testName    string
+		filterName  string
+		filterValue string
+	}{
+		{
+			testName:    "No team with name Los Angeles Likers",
+			filterName:  "name",
+			filterValue: "Los Angeles Likers",
+		},
+		{
+			testName:    "No team with conference Weast",
+			filterName:  "conference",
+			filterValue: "Weast",
+		},
+		{
+			testName:    "No team with division Northweast",
+			filterName:  "division",
+			filterValue: "Northweast",
+		},
+		{
+			testName:    "No team with est_year = 2022",
+			filterName:  "est_year",
+			filterValue: "2022",
+		},
+	}
+	for _, tC := range testCases {
+		tC := tC
+		t.Run(tC.testName, func(t provider.T) {
+			m := make(map[string]string)
+			m[tC.filterName] = tC.filterValue
+
+			client := src.NewApiClient(&t)
+			resp := client.GetTeams(m)
+
+			t.Assert().Equal(200, resp.StatusCode)
+			t.Assert().Empty(resp.Teams)
+		})
+	}
 }
 
 func TestTeams(t *testing.T) {
