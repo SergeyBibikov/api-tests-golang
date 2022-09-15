@@ -78,6 +78,18 @@ func (ts *TeamsSuite) TestAllFiltersButName(t provider.T) {
 	t.Assert().Equal("Dallas Mavericks", resp.Teams[0].Name)
 }
 
+func (ts *TeamsSuite) TestUnsupportedFilter(t provider.T) {
+	t.Story("Negative")
+
+	m := make(map[string]string)
+	m["aname"] = "Denver Nuggets"
+
+	client := src.NewApiClient(&t)
+	resp := client.GetTeams(m)
+
+	t.Assert().Equal(len(resp.Teams), 30)
+}
+
 func (ts *TeamsSuite) TestNameFilterDoesntAllowOtherFilters(t provider.T) {
 	t.Story("Negative")
 
