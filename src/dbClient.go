@@ -31,9 +31,9 @@ func NewDbClient() (*DbClient, error) {
 }
 
 func (d *DbClient) GetUsers(filters map[string]string) []User {
-	var result []User
+	result := make([]User, 0)
 
-	q := "select id, username, email, roleid, fav_playerid, fav_team from users"
+	q := "select id, username, email, roleid, fav_playerid, fav_teamid from users"
 	if len(filters) > 0 {
 		q += " where "
 		var t []string
@@ -42,9 +42,10 @@ func (d *DbClient) GetUsers(filters map[string]string) []User {
 		}
 		q += strings.Join(t, " and ")
 	}
+
 	r, _ := d.conn.Query(d.ctx, q)
 	for r.Next() {
-		var u User
+		u := User{}
 		r.Scan(&u.Id, &u.Username, &u.Email, &u.RoleId, &u.FavPlayerId, &u.FavTeam)
 		result = append(result, u)
 	}
