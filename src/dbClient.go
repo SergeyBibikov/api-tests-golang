@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -29,8 +30,24 @@ func NewDbClient() (*DbClient, error) {
 	return &DbClient{ctx, conn}, nil
 }
 
-func (d *DbClient) GetUser(filters map[string]string) User {
-	var u User
-	d.conn.Query()
-	return u
+func (d *DbClient) GetUsers(filters map[string]string) []User {
+	var result []User
+
+	q := "select id, username, email, roleid, fav_playerid, fav_team from users"
+	if len(filters) > 0 {
+		q += " where "
+		var t []string
+		for k, v := range filters {
+			t = append(t, fmt.Sprintf("%s=%s", k, v))
+		}
+		q += strings.Join(t, " and ")
+	}
+	r, _ := d.conn.Query(d.ctx, q)
+	for r.Next() {
+		var u User
+		r.Scan(&u.Id, &u.Username, &u.Email, &u.RoleId, &u.FavPlayerId, &u.FavTeam)
+		result = append(result, u)
+	}
+
+	return result
 }
