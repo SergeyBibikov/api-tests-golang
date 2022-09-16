@@ -17,7 +17,6 @@ func (to *RegistrationSuite) BeforeEach(t provider.T) {
 	t.Epic("Registration tests")
 }
 
-// TODO: check user was added to the db
 func (to *RegistrationSuite) TestSuccessfulRegistration(t provider.T) {
 	t.Parallel()
 	t.Story("Positive")
@@ -32,9 +31,16 @@ func (to *RegistrationSuite) TestSuccessfulRegistration(t provider.T) {
 		Password: p,
 		Email:    e})
 
+	c, _ := src.NewDbClient()
+	m := make(map[string]string)
+	m["id"] = fmt.Sprint(resp.UserId)
+	users := c.GetUsers(m)
+
 	t.Assert().Equal(201, resp.StatusCode)
-	t.Assert().Equal(resp.Error, "")
+	t.Assert().Equal("", resp.Error)
 	t.Assert().Equal("user created", resp.Message)
+	t.Assert().Equal(u, users[0].Username)
+
 }
 
 func (to *RegistrationSuite) TestValidationOfEmptyFields(t provider.T) {
