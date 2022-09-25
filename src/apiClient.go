@@ -3,6 +3,7 @@ package src
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -140,6 +141,26 @@ func (a *ApiClient) GetTeams(filters map[string]string) TeamsResponse {
 
 	return tr
 }
+func (a *ApiClient) DeleteTeam(token string, teamId int) DeleteTeamResponse {
+	u := a._url
+	u.Path = fmt.Sprintf("teams/%d", teamId)
+
+	p := *a.pt
+	finalUrl := u.String()
+	p.WithNewStep("Send request to '"+finalUrl+"'", func(sCtx provider.StepCtx) {})
+	resp, body := get(finalUrl)
+	a.Response = resp
+
+	var tr TeamsResponse
+	if resp.StatusCode != 200 {
+		json.Unmarshal(body, &tr)
+	} else {
+		json.Unmarshal(body, &tr.Teams)
+	}
+	tr.StatusCode = resp.StatusCode
+
+	return tr
+}
 
 func (a *ApiClient) Register(body RegStruct) RegisterResponse {
 
@@ -185,4 +206,10 @@ func post(url string, body []byte) (*http.Response, []byte, error) {
 	}
 
 	return resp, b, nil
+}
+
+func delete(url string) (*http.Response, error) {
+	req, _ := http.NewRequest("DELETE", url, nil)
+	resp, err := http.DefaultClient.Do(req)
+	return resp, err
 }
