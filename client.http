@@ -18,7 +18,9 @@ GET http://localhost:8080/teams?name="Utah4Jazz"
 GET http://localhost:8080/teams?conference="West"
 
 ###
+GET http://localhost:8080/teams?division="southeast"
 
+###
 GET http://localhost:8080/teams?name=""&conference="West"
 
 ###
@@ -30,5 +32,17 @@ content-type: application/json
     "username": "sample",
     "password": "Wed, 21 Oct 2015 18:27:50 GMT",
     "email": "asdfasdf@gmail.com"
+
+}
+
+###
+
+POST http://localhost:8080/register HTTP/1.1
+content-type: application/json
+
+{
+    "username": "Michael",
+    "password": "234ff3453535",
+    "email": "test@gmail.com"
 
 }
